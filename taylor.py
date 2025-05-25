@@ -45,11 +45,32 @@ def _(p1):
 
 @app.cell
 def _(N, fn0, fn0_sum, p1):
+
     import timeit
     fn_p5 = p1(5)
-    print ('fn_p5:', timeit.timeit(lambda :fn_p5(0.5), number=N))
-    print ('fn0:', timeit.timeit(lambda :fn0(0.5,5), number=N))
-    print ('fn0_sum:', timeit.timeit(lambda :fn0_sum(0.5,5) , number=N))
+    print ('fn0:', timeit.timeit(lambda :fn0(0.3,5), number=N))
+    print ('fn0_sum:', timeit.timeit(lambda :fn0_sum(0.3,5) , number=N))
+    print ('fn_p5:', timeit.timeit(lambda :fn_p5(0.3), number=N))
+
+    return (timeit,)
+
+
+@app.cell
+def _(N, np, timeit):
+    def sq(x):
+        return x**5
+    def sq3(x):
+        return x*x*x*x*x
+    print ('sin:', timeit.timeit(lambda :np.sin(0.3) , number=N))
+    print ('sq:', timeit.timeit(lambda :sq(0.3) , number=N))
+    print ('sq3:', timeit.timeit(lambda :sq3(0.3) , number=N))
+    return
+
+
+@app.cell
+def _(N, np, timeit):
+    print ('numpy  pow:', timeit.timeit(lambda :np.pow(0.3,3) , number=N))
+    print ('native pow:', timeit.timeit(lambda :pow(0.3,3) , number=N))
     return
 
 
