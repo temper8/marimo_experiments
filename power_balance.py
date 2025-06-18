@@ -17,7 +17,7 @@ def _(ip):
     file_browser = mo.ui.file_browser(initial_path=ip, selection_mode='directory', multiple= False)
     file_browser
 
-    return (file_browser,)
+    return file_browser, mo
 
 
 @app.cell
@@ -30,10 +30,26 @@ def _(cfg, file_browser):
     return done_tasks, race_path
 
 
+@app.cell
+def _(race_path):
+    import configparser
+    params = configparser.ConfigParser(inline_comment_prefixes=('#',))
+    params.read(race_path.joinpath('calc_params.ini'))
+    def print_params(params):
+        for section in params.sections():
+            print(f"[{section}]")
+    return (params,)
+
+
+@app.cell
+def _():
+    return
+
+
 @app.function
 def read_power_balance(path):
     pb = {}
-    with path.joinpath('PowerBalance.dat').open("r") as file:
+    with path.joinpath('power_balance.dat').open("r") as file:
         content = [line.strip().split() for line in file.readlines()]
         for line in content:
             pb[line[0]] = float(line[2])
@@ -70,43 +86,49 @@ def _(tasks_data):
 
 
 @app.cell
-def _(df):
+def _(df, params):
     from matplotlib import pyplot as plt
-    plt.plot(df['Nr'], df['Pabs(kW)'] , label='Pabs(kW)')
+    plt.plot(df[params['series']['var']], df['Pabs(kW)'] , label='Pabs(kW)')
+    plt.xlabel(params['series']['var'])
+    plt.ylabel('Pabs(kW)')
     plt.legend()
     plt.show()
     return (plt,)
 
 
-app._unparsable_cell(
-    r"""
-       rhoi(i)/a0,&   ! psi - normalised flux coordinate [0,1]
-       dV,&           ! flux tube volume (cm^3)
-       (PabsLD(i)+PabsTT(i)+PabsMX(i))*drhoi(i-1),& ! power absorbed in flux tube
-       PabsLD(i)/Ss,& ! These are absorbed power densities p (kW/cm^3)
-       PabsTT(i)/Ss,& ! Power absorbed in the flux tube dP = Pabs*drho,
-       PabsMX(i)/Ss   ! so p = dP/dV = (Pabs*drho)/(Ss*drho) = Pabs/Ss
-    """,
-    column=None, disabled=True, hide_code=False, name="_"
-)
+@app.cell(disabled=True)
+def _(mo):
+    mo.md(
+        r"""
+    rhoi(i)/a0,&   ! psi - normalised flux coordinate [0,1]
+    dV,&           ! flux tube volume (cm^3)
+    (PabsLD(i)+PabsTT(i)+PabsMX(i))*drhoi(i-1),& ! power absorbed in flux tube
+    PabsLD(i)/Ss,& ! These are absorbed power densities p (kW/cm^3)
+    PabsTT(i)/Ss,& ! Power absorbed in the flux tube dP = Pabs*drho,
+    PabsMX(i)/Ss   ! so p = dP/dV = (Pabs*drho)/(Ss*drho) = Pabs/Ss
+    """
+    )
+    return
 
 
 @app.cell
-def _(done_tasks, pd, plt, race_path):
+def _(done_tasks, params, pd, plt, race_path):
+    title = params['common']['name'] +' Nr=' + params['w2grid']['Nr'] +' Mmax=' + params['w2grid']['Mmax']
     fig, ax = plt.subplots()
+    fig.suptitle(title)
     for task1 in done_tasks:
         #pb = read_power_balance(race_path.joinpath(task))
         pabs_psi = race_path.joinpath(task1).joinpath('pabs(psi).dat')
-        df1 = pd.read_table(pabs_psi, header=None, names=['psi','dV','pabs', 'a1','b1','c1'], sep='\\s+' )
+        df1 = pd.read_table(pabs_psi, header=None, names=['psi','dV','Pabs', 'PabsLD','PabsTT','PabsMX'], sep='\\s+' )
         #plt.plot( df['b'] , label='b')
         #plt.legend()
         #plt.show()
-        ax.plot(df1['psi'], df1['pabs'] , label=task1)
-    
+        ax.plot(df1['psi'], df1['Pabs']/df1['dV'] , label=task1)
+
         #print(df1.index)
     ax.legend()
     ax.set_xlabel('psi')
-    ax.set_ylabel('pabs')
+    ax.set_ylabel('pabs/dV')
     plt.show()
     return
 
