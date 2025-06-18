@@ -113,7 +113,10 @@ def _(mo):
 
 @app.cell
 def _(done_tasks, params, pd, plt, race_path):
-    title = params['common']['name'] +' Nr=' + params['w2grid']['Nr'] +' Mmax=' + params['w2grid']['Mmax']
+    if params['series']['var'] == 'Nr':
+        title = params['common']['name'] + ' Mmax=' + params['w2grid']['Mmax']
+    else:
+        title = params['common']['name'] +' Nr=' + params['w2grid']['Nr'] 
     fig, ax = plt.subplots()
     fig.suptitle(title)
     for task1 in done_tasks:
@@ -128,7 +131,7 @@ def _(done_tasks, params, pd, plt, race_path):
         #print(df1.index)
     ax.legend()
     ax.set_xlabel('psi')
-    ax.set_ylabel('pabs/dV')
+    ax.set_ylabel('Pabs/dV')
     plt.show()
     return
 
