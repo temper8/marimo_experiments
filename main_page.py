@@ -67,8 +67,12 @@ def _(folder_browser, info_bar, mo, race_browser):
 
 
 @app.cell
-def _(race_path):
-
+def _(mo, race_path):
+    check_param= False
+    if race_path:
+        if race_path.joinpath('calc_params.ini').exists():
+            check_param= True
+    mo.stop(not check_param, mo.md("**Can't open calc_params.ini.**"))
     import configparser
     params = configparser.ConfigParser(inline_comment_prefixes=('#',))
     params.read(race_path.joinpath('calc_params.ini'))
@@ -108,7 +112,8 @@ def _(info_kind, mo, tasks_data):
     mo.stop(info_kind == 'danger', mo.md("**Submit the form to continue.**"))
     import pandas as pd
     df = pd.DataFrame.from_dict(tasks_data)
-    df
+    table = mo.ui.table(data=df)
+    table
     return df, pd
 
 
@@ -116,11 +121,14 @@ def _(info_kind, mo, tasks_data):
 def _(df, info_kind, mo, params):
     mo.stop(info_kind == 'danger', mo.md("**Submit the form to continue.**"))
     from matplotlib import pyplot as plt
-    plt.plot(df[params['series']['var']], df['Pabs(kW)'] , label='Pabs(kW)')
-    plt.xlabel(params['series']['var'])
-    plt.ylabel('Pabs(kW)')
-    plt.legend()
-    plt.show()
+    fig_pabs, ax_pabs = plt.subplots()
+    fig_pabs.suptitle('Pabs')
+    ax_pabs.plot(df[params['series']['var']], df['Pabs(kW)'] , label='Pabs(kW)')
+    ax_pabs.set_xlabel(params['series']['var'])
+    ax_pabs.set_ylabel('Pabs(kW)')
+    #ax_pabs.set_legend()
+    #fig_pabs.show()
+
     return (plt,)
 
 
@@ -149,7 +157,15 @@ def _(done_tasks, info_kind, mo, params, pd, plt, race_path):
     ax.set_yscale('log')
     ax.set_xlabel('psi')
     ax.set_ylabel('Pabs/dV')
-    plt.show()
+    #plt.show()
+
+    mo.md(
+        f"""
+        Here is a plot:
+
+        {mo.as_html(ax)}
+        """
+    )
     return
 
 
