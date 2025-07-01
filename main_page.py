@@ -40,7 +40,7 @@ def _(mo, race_browser):
             info_kind = 'success'
             with race_path.joinpath('done_tasks.txt').open("r") as file:
                 done_tasks = [line.strip() for line in file.readlines()]
-            info = mo.md(f"{done_tasks}")        
+            info = mo.md(f"{race_path.name}\n\n {done_tasks}")        
         else:
             info = mo.md(f"done_tasks not exists!")
             info_kind = 'danger'
