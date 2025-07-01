@@ -85,5 +85,29 @@ def _(folder_browser, mo, task_browser):
     return
 
 
+@app.cell
+def _(mo):
+    mo.md(
+        r'''
+        The exponential function $f(x) = e^x$ can be represented as
+
+        \[
+            f(x) = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \ldots.
+        \]
+        '''
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r'''
+        The exponential function $f(x) = e^x$ can be represented as
+        '''
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
