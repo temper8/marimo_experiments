@@ -130,6 +130,9 @@ def _(done_tasks, params, pd, plt, race_path):
 
         #print(df1.index)
     ax.legend()
+    ax.set_xlim([0, 0.4])
+    #ax.set_ylim([0, 0.000002])
+    ax.set_yscale('log')
     ax.set_xlabel('psi')
     ax.set_ylabel('Pabs/dV')
     plt.show()
