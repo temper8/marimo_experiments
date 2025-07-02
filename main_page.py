@@ -32,6 +32,12 @@ def _(folder_browser, mo):
 
 
 @app.cell
+def _(folder_browser, mo, race_browser):
+    mo.sidebar([mo.vstack([folder_browser, race_browser])])
+    return
+
+
+@app.cell
 def _(mo, race_browser):
     race_path = race_browser.path(index=0)
     if race_path:
@@ -52,17 +58,12 @@ def _(mo, race_browser):
 
 @app.cell
 def _(info, info_kind, mo):
-    info_bar = mo.callout(info, kind=info_kind)
-    return (info_bar,)
+    mo.callout(info, kind=info_kind)
+    return
 
 
 @app.cell
-def _(folder_browser, info_bar, mo, race_browser):
-    mo.vstack([
-        mo.hstack([folder_browser, race_browser,]),
-        info_bar
-    ])
-
+def _():
     return
 
 
@@ -113,8 +114,12 @@ def _(info_kind, mo, tasks_data):
     import pandas as pd
     df = pd.DataFrame.from_dict(tasks_data)
     table = mo.ui.table(data=df)
-    table
-    return df, pd
+    return df, pd, table
+
+
+@app.cell
+def _():
+    return
 
 
 @app.cell
@@ -125,11 +130,11 @@ def _(df, info_kind, mo, params):
     fig_pabs.suptitle('Pabs')
     ax_pabs.plot(df[params['series']['var']], df['Pabs(kW)'] , label='Pabs(kW)')
     ax_pabs.set_xlabel(params['series']['var'])
-    ax_pabs.set_ylabel('Pabs(kW)')
+    ax_pabs.set_ylabel('Pabs(kW)');
     #ax_pabs.set_legend()
     #fig_pabs.show()
 
-    return (plt,)
+    return ax_pabs, plt
 
 
 @app.cell
@@ -156,16 +161,21 @@ def _(done_tasks, info_kind, mo, params, pd, plt, race_path):
     #ax.set_ylim([0, 0.000002])
     ax.set_yscale('log')
     ax.set_xlabel('psi')
-    ax.set_ylabel('Pabs/dV')
+    ax.set_ylabel('Pabs/dV');
     #plt.show()
 
-    mo.md(
-        f"""
-        Here is a plot:
 
-        {mo.as_html(ax)}
-        """
-    )
+    return (ax,)
+
+
+@app.cell
+def _(ax, ax_pabs, mo, table):
+    mo.ui.tabs({
+        "Pabs table": table,
+        "Pabs": mo.as_html(ax_pabs),
+        "Pabs(psi)": mo.as_html(ax)
+    
+    })
     return
 
 
